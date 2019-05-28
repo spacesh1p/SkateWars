@@ -6,8 +6,11 @@ const mongoose = require('mongoose');
 
 const UserDbItem = require('./UserDbItem');
 
+const DATABASE_URI = process.env.MONGODB_URI || 'mongodb://localhost/SkateWars';
+const PORT = process.env.PORT || 3000;
 
-http.listen(3000, function(){
+
+http.listen(PORT, function(){
     console.log('listening on *:3000');
 });
 
@@ -29,7 +32,7 @@ app.post('/register', function (request, response) {
         password: passwd
     });
 
-    mongoose.connect('mongodb://localhost/SkateWars', function (err) {
+    mongoose.connect(DATABASE_URI, function (err) {
         if (err) {
             response.send(JSON.stringify(false));
             return;
@@ -179,7 +182,7 @@ socketInChallenge = new Map;
 
 io.use(function(socket, next){
 
-    mongoose.connect('mongodb://localhost/SkateWars', function (err) {
+    mongoose.connect(DATABASE_URI, function (err) {
         let login = socket.handshake.query['login'];
         let password = socket.handshake.query['passwd'];
 
