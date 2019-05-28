@@ -1,0 +1,10 @@
+{
+  "name": "SkateWars",
+  "version": "1.0.0",
+  "dependencies": {
+    "express": "^4.16.4",
+    "socket.io": "^2.2.0",
+    "socket.io-request": "^0.8.0",
+    "mongoose": "^5.5.11"
+  }
+}
