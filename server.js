@@ -27,31 +27,33 @@ app.post('/register', function (request, response) {
         return;
     }
 
-    let newUser = new UserDbItem({
-        username: uname,
-        password: passwd
-    });
+    console.log('Username: ' + uname + ', password: ' + passwd);
 
-    mongoose.connect(DATABASE_URI, function (err) {
-        if (err) {
-            response.send(JSON.stringify(false));
-            return;
-        }
-
-        newUser.pre('save', function (next) {
-            const self = this;
-            UserDbItem.find({username: self.username}, function (err, users) {
-                if (!users.length) {
-                    response.send(JSON.stringify(true));
-                    next();
-                } else {
-                    response.send(JSON.stringify(false));
-                    next(new Error('User exists!'));
-                }
-                
-            });
-        });
-    });
+    // let newUser = new UserDbItem({
+    //     username: uname,
+    //     password: passwd
+    // });
+    //
+    // mongoose.connect(DATABASE_URI, function (err) {
+    //     if (err) {
+    //         response.send(JSON.stringify(false));
+    //         return;
+    //     }
+    //
+    //     newUser.pre('save', function (next) {
+    //         const self = this;
+    //         UserDbItem.find({username: self.username}, function (err, users) {
+    //             if (!users.length) {
+    //                 response.send(JSON.stringify(true));
+    //                 next();
+    //             } else {
+    //                 response.send(JSON.stringify(false));
+    //                 next(new Error('User exists!'));
+    //             }
+    //
+    //         });
+    //     });
+    // });
     
 });
 
@@ -124,7 +126,7 @@ class Challenge {
         console.log("Toss " + this.toss1 + " " + this.toss2);
         if (user === this.user1)
             this.toss1 = toss;
-        else if (user === this.user2)
+        if (user === this.user2)
             this.toss2 = toss;
 
         if (this.toss1 !== -1 && this.toss2 !== -1) {
@@ -144,6 +146,7 @@ class Challenge {
     }
 
     sendVideo(user, video) {
+        console.log("DDAGAEV: send video");
         this.getOpponentSocket(user).emit('video', video);
     }
 
@@ -180,30 +183,40 @@ challengesMap = new Map;
 usersOnline = new Map;
 socketInChallenge = new Map;
 
-io.use(function(socket, next){
-
-    mongoose.connect(DATABASE_URI, function (err) {
-        let login = socket.handshake.query['login'];
-        let password = socket.handshake.query['passwd'];
-
-        if ((!login) || (!password)) {
-            next(new Error('Authentication error'));
-        }
-
-        const user = new UserDbItem({
-            username: login,
-            password: password
-        });
-
-        UserDbItem.find({username: user.username, password: user.password}, function (err, users) {
-           if (users.length === 1) {
-               next();
-           } else {
-               next(new Error('Authentication error'));
-           }
-        });
-    });
-});
+// io.use(function(socket, next){
+//
+//     let login = socket.handshake.query['login'];
+//     let password = socket.handshake.query['passwd'];
+//
+//     if ((!login) || (!password)) {
+//         next(new Error('Authentication error'));
+//     }
+//
+//     console.log('Login: ' + login + ', password: ' + password);
+//     next();
+//
+//     mongoose.connect(DATABASE_URI, function (err) {
+//         let login = socket.handshake.query['login'];
+//         let password = socket.handshake.query['passwd'];
+//
+//         if ((!login) || (!password)) {
+//             next(new Error('Authentication error'));
+//         }
+//
+//         const user = new UserDbItem({
+//             username: login,
+//             password: password
+//         });
+//
+//         UserDbItem.find({username: user.username, password: user.password}, function (err, users) {
+//            if (users.length === 1) {
+//                next();
+//            } else {
+//                next(new Error('Authentication error'));
+//            }
+//         });
+//     });
+// });
 
 io.on('connection', function(socket){
     console.log('an user ' + socket.handshake.query['login'] + ' connected, password=' + socket.handshake.query['passwd']);
@@ -239,7 +252,7 @@ io.on('connection', function(socket){
     socket.on('get users', function () {
         let users = [];
         usersOnline.forEach((value, key) => {
-            if (key !== socket)
+            // if (key !== socket)
                 users.push(value);
         });
         console.log(JSON.stringify(users));
@@ -331,5 +344,10 @@ io.on('connection', function(socket){
             }
             socketInChallenge.set(socket, -1);
         }
+    });
+
+    socket.on('error', function (error) {
+        if (error.description) console.log("Get error: " + error.description);
+        else console.log("Get error: " + errors);
     });
 });
